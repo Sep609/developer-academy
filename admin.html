@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Developer Academy Admin</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;font-family:Arial,sans-serif;
+ background:#101020;color:white;padding:20px;
+}
+.container{max-width:700px;margin:40px auto}
+.card{
+ background:#1c1c35;padding:25px;border-radius:18px;
+ border:1px solid #39395c;margin-bottom:20px;
+}
+h1{color:#c58cff}
+h2{color:#70dfff}
+input,textarea,button{
+ width:100%;padding:13px;margin:8px 0;
+ border-radius:9px;border:1px solid #555;
+ font-size:15px;
+}
+input,textarea{background:#111126;color:white}
+button{
+ background:linear-gradient(90deg,#a855f7,#ec4899);
+ color:white;border:0;font-weight:bold;cursor:pointer;
+}
+.secondary{background:#333354}
+#dashboard{display:none}
+small{color:#aaa}
+</style>
+</head>
+<body>
+<div class="container">
+
+<section id="login" class="card">
+<h1>✦ Developer Academy</h1>
+<h2>Admin Login</h2>
+<p>Enter your private administrator password.</p>
+<input id="password" type="password" placeholder="Admin password">
+<button onclick="login()">Unlock Dashboard</button>
+<p id="message"></p>
+</section>
+
+<section id="dashboard" >
+<div class="card">
+<h1>Admin Dashboard</h1>
+<p>Welcome to Developer Academy management.</p>
+<button class="secondary" onclick="logout()">Log Out</button>
+</div>
+
+<div class="card">
+<h2>Edit Profile</h2>
+<input id="name" placeholder="Display name">
+<input id="title" placeholder="Professional title">
+<input id="location" placeholder="Location">
+<textarea id="bio" placeholder="Write your biography"></textarea>
+<button onclick="saveProfile()">Save Profile</button>
+<p id="profileMessage"></p>
+</div>
+
+<div class="card">
+<h2>Add a Project</h2>
+<input id="projectName" placeholder="Project name">
+<textarea id="projectDescription" placeholder="Project description"></textarea>
+<input id="projectTech" placeholder="Technology used">
+<button onclick="addProject()">Add Project</button>
+<div id="projects"></div>
+</div>
+
+<div class="card">
+<h2>Website Information</h2>
+<p><b>Slogan:</b> Made to Help.</p>
+<p><b>Platform:</b> Developer Academy</p>
+<p><b>Admin:</b> Private dashboard</p>
+</div>
+</section>
+</div>
+
+<script>
+// Change this placeholder privately in Acode.
+// Do not send your password to anyone.
+const ADMIN_PASSWORD = "Academicyear";
+
+function login(){
+ const entered=document.getElementById("password").value;
+ if(entered===ADMIN_PASSWORD){
+  sessionStorage.setItem("academyAdmin","unlocked");
+  showDashboard();
+ }else{
+  document.getElementById("message").textContent="Incorrect password.";
+ }
+}
+
+function showDashboard(){
+ document.getElementById("login").style.display="none";
+ document.getElementById("dashboard").style.display="block";
+ loadData();
+}
+
+function logout(){
+ sessionStorage.removeItem("academyAdmin");
+ location.reload();
+}
+
+function saveProfile(){
+ const profile={
+  name:document.getElementById("name").value,
+  title:document.getElementById("title").value,
+  location:document.getElementById("location").value,
+  bio:document.getElementById("bio").value
+ };
+ localStorage.setItem("academyProfile",JSON.stringify(profile));
+ document.getElementById("profileMessage").textContent="Profile saved on this browser!";
+}
+
+function addProject(){
+ const name=document.getElementById("projectName").value.trim();
+ const description=document.getElementById("projectDescription").value.trim();
+ const tech=document.getElementById("projectTech").value.trim();
+
+ if(!name||!description){
+  alert("Enter a project name and description.");
+  return;
+ }
+
+ const projects=JSON.parse(localStorage.getItem("academyProjects")||"[]");
+ projects.push({name,description,tech});
+ localStorage.setItem("academyProjects",JSON.stringify(projects));
+
+ document.getElementById("projectName").value="";
+ document.getElementById("projectDescription").value="";
+ document.getElementById("projectTech").value="";
+ renderProjects();
+}
+
+function renderProjects(){
+ const projects=JSON.parse(localStorage.getItem("academyProjects")||"[]");
+ const area=document.getElementById("projects");
+ area.replaceChildren();
+
+ projects.forEach((project,index)=>{
+  const item=document.createElement("div");
+  item.className="card";
+
+  const heading=document.createElement("h3");
+  heading.textContent=project.name;
+
+  const description=document.createElement("p");
+  description.textContent=project.description;
+
+  const technology=document.createElement("small");
+  technology.textContent=project.tech;
+
+  const remove=document.createElement("button");
+  remove.textContent="Delete Project";
+  remove.className="secondary";
+  remove.onclick=()=>{
+   projects.splice(index,1);
+   localStorage.setItem("academyProjects",JSON.stringify(projects));
+   renderProjects();
+  };
+
+  item.append(heading,description,technology,remove);
+  area.append(item);
+ });
+}
+
+function loadData(){
+ const profile=JSON.parse(localStorage.getItem("academyProfile")||"{}");
+ document.getElementById("name").value=profile.name||"Your Name";
+ document.getElementById("title").value=profile.title||"Aspiring Software Developer";
+ document.getElementById("location").value=profile.location||"Tanzania";
+ document.getElementById("bio").value=profile.bio||"";
+ renderProjects();
+}
+
+if(sessionStorage.getItem("academyAdmin")==="unlocked"){
+ showDashboard();
+}
+</script>
+</body>
+</html>
